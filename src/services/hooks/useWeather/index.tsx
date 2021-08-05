@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+import { Coordinates } from "src/model/coordinates";
 import { OPEN_WEATHER_KEY } from "../../../constants";
 import { TempUnit } from "../../../model/tempUnit";
 import { WeatherData } from "./types";
@@ -7,7 +8,7 @@ import { api } from "../../../services/api";
 import { factoryWeather } from "./factory";
 
 interface UseWeatherProps {
-  city?: string;
+  coordinates?: Coordinates;
   unit?: TempUnit;
 }
 
@@ -16,8 +17,10 @@ interface WeatherContextData {
   setWeatherDays: React.Dispatch<React.SetStateAction<WeatherData | undefined>>;
   error?: string;
   setError: React.Dispatch<React.SetStateAction<string | undefined>>;
-  currentCity?: string;
-  setCurrentCity: React.Dispatch<React.SetStateAction<string | undefined>>;
+  currentCoordinates?: Coordinates;
+  setCurrentCoordinates: React.Dispatch<
+    React.SetStateAction<Coordinates | undefined>
+  >;
 }
 
 interface WeatherProviderProps {
@@ -31,13 +34,15 @@ const WeatherContext = createContext<WeatherContextData>(
 export function WeatherProvider({ children }: WeatherProviderProps) {
   const [weatherDays, setWeatherDays] = useState<WeatherData>();
   const [error, setError] = useState<string>();
-  const [currentCity, setCurrentCity] = useState<string>();
+  const [currentCoordinates, setCurrentCoordinates] = useState<
+    Coordinates | undefined
+  >();
 
   return (
     <WeatherContext.Provider
       value={{
-        currentCity,
-        setCurrentCity,
+        currentCoordinates,
+        setCurrentCoordinates,
         weatherDays,
         setWeatherDays,
         error,
@@ -50,12 +55,12 @@ export function WeatherProvider({ children }: WeatherProviderProps) {
 }
 
 export const useWeather = ({
-  city,
+  coordinates,
   unit = TempUnit.IMPERIAL,
 }: UseWeatherProps) => {
   const {
-    currentCity,
-    setCurrentCity,
+    currentCoordinates,
+    setCurrentCoordinates,
     weatherDays,
     setWeatherDays,
     error,
@@ -63,18 +68,18 @@ export const useWeather = ({
   } = useContext(WeatherContext);
 
   useEffect(() => {
-    if (!!city && currentCity !== city) {
-      setCurrentCity(city);
+    if (!!coordinates && coordinates !== currentCoordinates) {
+      setCurrentCoordinates(coordinates);
       api
         .get("/forecast", {
           params: {
-            q: currentCity ?? city,
+            lat: currentCoordinates?.lat ?? coordinates.lat,
+            lon: currentCoordinates?.lon ?? coordinates.lon,
             appId: OPEN_WEATHER_KEY,
             units: unit,
           },
         })
         .then((response) => {
-          console.log(response);
           setWeatherDays(factoryWeather(response.data, unit));
         })
         .catch(function (e) {
@@ -82,8 +87,8 @@ export const useWeather = ({
           setError(e.msg ?? "Unknown Error");
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coordinates]);
 
   return {
     city: weatherDays?.city,

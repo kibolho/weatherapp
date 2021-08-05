@@ -129,7 +129,6 @@ const WeatherGraph = ({
                         }, 300);
                       }}
                       onMouseMove={() => {
-                        console.log("olá", bar);
                         if (tooltipTimeout) clearTimeout(tooltipTimeout);
                         const top = bar.y + margin.top;
                         const left =
