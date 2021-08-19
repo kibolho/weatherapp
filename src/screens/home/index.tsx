@@ -42,17 +42,21 @@ export default function Home() {
     }
   };
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.permissions
-        .query({ name: "geolocation" })
-        .then(function (result) {
-          checkLocationPermissions(result);
-          result.onchange = function (result) {
+    try {
+      if (navigator.geolocation) {
+        navigator.permissions
+          .query({ name: "geolocation" })
+          .then(function (result) {
             checkLocationPermissions(result);
-          };
-        });
+            result.onchange = function (result) {
+              checkLocationPermissions(result);
+            };
+          });
+      }
+    } catch (e) {
+      alert("Sorry Not available for your location!");
+      setCoordinates({ lat: "-20.2804461", lon: "-40.3008235" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
