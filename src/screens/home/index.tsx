@@ -57,6 +57,7 @@ export default function Home() {
       alert("Sorry Not available for your location!");
       setCoordinates({ lat: "-20.2804461", lon: "-40.3008235" });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
